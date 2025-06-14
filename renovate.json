@@ -1,0 +1,15 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "baseBranches": [
+        "main"
+    ],
+    "rebaseWhen": "behind-base-branch",
+    "schedule": [
+        "0 0-3 * * *"
+    ],
+    "tekton": {
+        "managerFilePatterns": [
+            "/pipelines/.+\\.yaml$/"
+        ]
+    }
+}
