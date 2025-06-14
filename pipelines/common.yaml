@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: stolostron-build-pipeline
+  name: stolostron-common-build-pipeline
   namespace: crt-redhat-acm-tenant
 spec:
   description: |
