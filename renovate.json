@@ -1,15 +1,18 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "baseBranches": [
-        "main"
-    ],
-    "rebaseWhen": "behind-base-branch",
-    "schedule": [
-        "0 0-3 * * *"
+    "enabledManagers": [
+        "tekton"
     ],
     "tekton": {
         "managerFilePatterns": [
-            "/pipelines/.+\\.yaml$/"
+            "^pipelines/.*\\.ya?ml$"
         ]
-    }
+    },
+    "schedule": [
+        "every 1 hour"
+    ],
+    "baseBranches": [
+        "main"
+    ],
+    "rebaseWhen": "behind-base-branch"
 }
