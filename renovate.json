@@ -4,7 +4,7 @@
         "tekton"
     ],
     "tekton": {
-        "managerFilePatterns": [
+        "fileMatch": [
             "^pipelines/.*\\.ya?ml$"
         ]
     },
