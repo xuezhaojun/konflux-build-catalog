@@ -9,7 +9,7 @@
         ]
     },
     "schedule": [
-        "every 1 hour"
+        "every hour"
     ],
     "baseBranches": [
         "main"
