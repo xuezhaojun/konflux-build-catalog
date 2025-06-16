@@ -5,7 +5,12 @@
     ],
     "tekton": {
         "fileMatch": [
-            "^pipelines/.*\\.ya?ml$"
+            "\\.yaml$",
+            "\\.yml$"
+        ],
+        "includePaths": [
+            ".tekton/**",
+            "pipelines/**"
         ]
     },
     "schedule": [
