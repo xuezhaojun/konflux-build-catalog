@@ -9,7 +9,7 @@
         ]
     },
     "schedule": [
-        "every weekday"
+        "at any time"
     ],
     "baseBranches": [
         "main"
