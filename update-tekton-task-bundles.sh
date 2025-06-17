@@ -5,6 +5,13 @@
 
 set -euo pipefail
 
+# Detect OS and set sed in-place flag accordingly
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  SED_INPLACE=(-i '')
+else
+  SED_INPLACE=(-i)
+fi
+
 FILES=$@
 
 # Find existing image references
@@ -62,7 +69,7 @@ EOF
     new_digest=$(skopeo inspect docker://${repo}:${old_tag} | yq '.Digest')
     new_ref="${repo}:${old_tag}@${new_digest}"
     for file in $FILES; do
-        sed -i '' -e "s!${old_ref}!${new_ref}!g" $file
+        sed "${SED_INPLACE[@]}" -e "s!${old_ref}!${new_ref}!g" "$file"
     done
 done
 
