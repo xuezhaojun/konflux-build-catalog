@@ -28,6 +28,7 @@ jobs:
         run: |
           if jq -e 'length > 0' migration_data.json; then
             echo "Migration required. Please review and migrate before proceeding."
+            cat migration_data.json
             exit 1
           fi
 
