@@ -15,20 +15,39 @@ jobs:
       - name: Set up dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y skopeo
+          sudo apt-get install -y skopeo jq
           sudo wget -O /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.44.1/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
       - name: Run update-tekton-task-bundles.sh
         id: update_bundles
         run: |
-          bash ./update-tekton-task-bundles.sh pipelines/common.yaml > migration_output.txt
-          # Extract migration_data JSON array
-          MIGRATION_JSON=$(awk '/^\[/{flag=1} flag; /\]/{flag=0}' migration_output.txt | tr -d '\n')
-          echo "migration_data=$MIGRATION_JSON" >> $GITHUB_OUTPUT
+          bash ./update-tekton-task-bundles.sh pipelines/common.yaml > migration_data.json
 
       - name: Fail if migration is required
-        if: ${{ steps.update_bundles.outputs.migration_data != '' }}
         run: |
-          echo "Migration required. Please review and migrate before proceeding."
-          exit 1
+          if jq -e 'length > 0' migration_data.json; then
+            echo "Migration required. Please review and migrate before proceeding."
+            exit 1
+          fi
+
+      - name: Check if common.yaml changed
+        id: check_diff
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          if git diff --quiet pipelines/common.yaml; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request if needed
+        if: steps.check_diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: update Tekton Task Bundles in common.yaml"
+          title: "chore: update Tekton Task Bundles in common.yaml"
+          body: "Automated PR to update Tekton Task Bundles. No migration required."
+          branch: tekton-bundle-update
+          base: main
+          add-paths: pipelines/common.yaml
