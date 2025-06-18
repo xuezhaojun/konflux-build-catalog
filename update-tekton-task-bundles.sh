@@ -2,6 +2,7 @@
 
 # Use this script to update the Tekton Task Bundle references used in a Pipeline or a PipelineRun.
 # update-tekton-task-bundles.sh .tekton/*.yaml
+# The script is copied and modified from https://konflux-ci.dev/docs/troubleshooting/builds/#:~:text=You%20can%20find%20the%20newest,For%20example
 
 set -euo pipefail
 
