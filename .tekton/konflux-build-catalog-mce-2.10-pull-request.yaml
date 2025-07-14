@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/stolostron/konflux-build-catalog?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "true"
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "main"
+  creationTimestamp: null
+  labels:
+    appstudio.openshift.io/application: konflux-build-catalog
+    appstudio.openshift.io/component: konflux-build-catalog-da738
+    pipelines.appstudio.openshift.io/type: build
+  generateName: konflux-build-catalog-mce-2.10-on-pull-request
+  namespace: zxue-tenant
+spec:
+  params:
+  - name: git-url
+    value: '{{source_url}}'
+  - name: revision
+    value: '{{revision}}'
+  - name: output-image
+    value: quay.io/redhat-user-workloads/zxue-tenant/konflux-build-catalog-da738:on-pr-{{revision}}
+  - name: image-expires-after
+    value: 5d
+  - name: dockerfile
+    value: Dockerfile
+  pipelineRef:
+    resolver: git
+    params:
+      - name: url
+        value: "https://github.com/stolostron/konflux-build-catalog.git"
+      - name: revision
+        value: main
+      - name: pathInRepo
+        value: pipelines/common_mce_2.10.yaml
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-konflux-build-catalog-da738
+  workspaces:
+  - name: git-auth
+    secret:
+      secretName: '{{ git_auth_secret }}'
+status: {}
