@@ -56,7 +56,7 @@ for old_ref in ${OLD_REFS}; do
     "currentDigest": "$old_digest",
     "newValue": "$latest_main_tag",
     "newDigest": "$new_digest",
-    "packageFile": "pipelines/common.yaml",
+    "packageFile": "$file",
     "parentDir": ".",
     "depTypes": ["tekton-bundle"]
   }

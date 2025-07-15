@@ -8,6 +8,12 @@ on:
 jobs:
   update-tekton-task-bundles:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        pipeline_file:
+          - common.yaml
+          - common_mce_2.10.yaml
+      fail-fast: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,7 +28,7 @@ jobs:
       - name: Run update-tekton-task-bundles.sh
         id: update_bundles
         run: |
-          bash ./update-tekton-task-bundles.sh pipelines/common.yaml > migration_data.json
+          bash ./update-tekton-task-bundles.sh pipelines/${{ matrix.pipeline_file }} > migration_data.json
 
       - name: Check if migration is required
         id: check_migration
@@ -38,7 +44,7 @@ jobs:
             echo "issue_body<<EOF" >> $GITHUB_OUTPUT
             echo "## Tekton Task Bundle Migration Required" >> $GITHUB_OUTPUT
             echo "" >> $GITHUB_OUTPUT
-            echo "The automated Tekton task bundle update process has detected that **${migration_count}** task bundle(s) require migration to newer versions." >> $GITHUB_OUTPUT
+            echo "The automated Tekton task bundle update process has detected that **${migration_count}** task bundle(s) require migration to newer versions in **${{ matrix.pipeline_file }}**." >> $GITHUB_OUTPUT
             echo "" >> $GITHUB_OUTPUT
             echo "### Migration Details:" >> $GITHUB_OUTPUT
             echo -e "$migration_details" >> $GITHUB_OUTPUT
@@ -66,7 +72,7 @@ jobs:
         uses: imjohnbo/issue-bot@v3
         with:
           token: ${{ github.token }}
-          title: "Tekton Task Bundle Migration Required - ${{ github.run_id }}"
+          title: "Tekton Task Bundle Migration Required - ${{ matrix.pipeline_file }} - ${{ github.run_id }}"
           body: ${{ steps.check_migration.outputs.issue_body }}
           labels: "migration"
           assignees: ${{ github.actor }}
@@ -74,16 +80,16 @@ jobs:
       - name: Fail if migration is required
         run: |
           if jq -e 'length > 0' migration_data.json; then
-            echo "Migration required. Please review and migrate before proceeding."
+            echo "Migration required for ${{ matrix.pipeline_file }}. Please review and migrate before proceeding."
             cat migration_data.json
             exit 1
           fi
 
-      - name: Check if common.yaml changed
+      - name: Check if pipeline file changed
         id: check_diff
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          if git diff --quiet pipelines/common.yaml; then
+          if git diff --quiet pipelines/${{ matrix.pipeline_file }}; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "changed=true" >> $GITHUB_OUTPUT
@@ -93,9 +99,9 @@ jobs:
         if: steps.check_diff.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "chore: update Tekton Task Bundles in common.yaml"
-          title: "chore: update Tekton Task Bundles in common.yaml"
-          body: "Automated PR to update Tekton Task Bundles. No migration required."
-          branch: tekton-bundle-update
+          commit-message: "chore: update Tekton Task Bundles in ${{ matrix.pipeline_file }}"
+          title: "chore: update Tekton Task Bundles in ${{ matrix.pipeline_file }}"
+          body: "Automated PR to update Tekton Task Bundles in ${{ matrix.pipeline_file }}. No migration required."
+          branch: tekton-bundle-update-${{ matrix.pipeline_file }}
           base: main
-          add-paths: pipelines/common.yaml
+          add-paths: pipelines/${{ matrix.pipeline_file }}
