@@ -30,7 +30,8 @@ spec:
   - name: dockerfile
     value: Dockerfile
   - name: build-platforms
-    value: linux/amd64
+    value:
+    - linux/amd64
   pipelineRef:
     resolver: git
     params:
