@@ -182,3 +182,9 @@ jobs:
           branch: tekton-bundle-update-${{ github.run_number }}-${{ github.run_attempt }}
           base: main
           signoff: true
+
+      - name: Clean up temporary files
+        if: always()
+        run: |
+          # Clean up temporary files regardless of workflow outcome
+          rm -f combined_migration_data.json temp_migration_data.json merged_migration_data.json
