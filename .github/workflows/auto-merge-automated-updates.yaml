@@ -16,7 +16,7 @@ jobs:
         id: get_prs
         run: |
           # Get all open PRs with automated-update label
-          prs=$(gh pr list --label "automated-update" --state open --json number,title,url,statusCheckRollupState,mergeable --jq '.[] | select(.mergeable == "MERGEABLE" and .statusCheckRollupState == "SUCCESS")')
+          prs=$(gh pr list --label "automated-update" --state open --json number,title,url,statusCheckRollup,mergeable --jq '.[] | select(.mergeable == "MERGEABLE" and .statusCheckRollup.state == "SUCCESS")')
 
           if [ -z "$prs" ]; then
             echo "No PRs ready for auto-merge"
