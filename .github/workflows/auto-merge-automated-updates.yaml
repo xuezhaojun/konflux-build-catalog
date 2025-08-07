@@ -20,8 +20,8 @@ jobs:
           prs=$(gh pr list --label "automated-update" --state open --json number,title,url,statusCheckRollup,mergeable --jq '
             .[] | select(
               .mergeable == "MERGEABLE" and
-              (.statusCheckRollup | map(select(.context != "tide" and .name != "tide")) | map(select(.state == "FAILURE" or .conclusion == "FAILURE")) | length == 0) and
-              (.statusCheckRollup | map(select(.context != "tide" and .name != "tide")) | map(select(.state == "SUCCESS" or .conclusion == "SUCCESS")) | length > 0)
+              ([.statusCheckRollup[] | select(.context != "tide" and .name != "tide" and (.state == "FAILURE" or .conclusion == "FAILURE"))] | length == 0) and
+              ([.statusCheckRollup[] | select(.context != "tide" and .name != "tide" and (.state == "SUCCESS" or .conclusion == "SUCCESS"))] | length > 0)
             )')
 
           if [ -z "$prs" ]; then
