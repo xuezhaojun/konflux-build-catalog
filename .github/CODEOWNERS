@@ -7,14 +7,14 @@
 # Specific ownership for .tekton pipeline files
 # Each file can be assigned to different maintainers for specialized review
 
-.tekton/common-pipeline-pull-request.yaml @xuezhaojun
-.tekton/common-pipeline-push.yaml @xuezhaojun
+.tekton/common-pipeline-pull-request.yaml @clyang82
+.tekton/common-pipeline-push.yaml @clyang82
 .tekton/common-pipeline-mce-* @zhujian7 @xuezhaojun
 .tekton/common-pipeline-oci-ta-pull-request.yaml @clyang82
 .tekton/common-pipeline-fbc-pull-request.yaml @clyang82
 
 # Pipeline source files
-pipelines/common.yaml @xuezhaojun
+pipelines/common.yaml @clyang82
 pipelines/common_mce_* @zhujian7 @xuezhaojun
 pipelines/common-oci-ta.yaml @clyang82
 pipelines/common-fbc.yaml @clyang82
