@@ -120,7 +120,6 @@ spec:
       name: slack-group-id
       description: |
         The group id of the slack user group, if this is set will mention the group in the slack message; this id can be found by viewing the user group details. e.g. S07XXXXXXXX
-      type: string
     - name: buildah-format
       default: docker
       type: string
@@ -658,68 +657,21 @@ spec:
           value: $(params.slack-webhook-url-secret-name)
         - name: key-name
           value: $(params.slack-webhook-url-secret-key)
-        - name: slack-member-id
-          value: $(params.slack-member-id)
-        - name: slack-group-id
-          value: $(params.slack-group-id)
-      taskSpec:
+        - name: user-ids
+          value:
+            - $(params.slack-member-id)
+        - name: group-ids
+          value:
+            - $(params.slack-group-id)
+      taskRef:
         params:
-          - name: message
-            type: string
-            description: The message to send to Slack
-          - name: secret-name
-            type: string
-            description: The name of the secret containing the webhook URL
-          - name: key-name
-            type: string
-            description: The key in the secret containing the webhook URL
-          - name: slack-member-id
-            type: string
-            default: ""
-            description: Slack member ID to mention (e.g., U0600000000)
-          - name: slack-group-id
-            type: string
-            default: ""
-            description: Slack group ID to mention (e.g., S07XXXXXXXX for usergroups)
-        steps:
-          - name: post-to-slack
-            image: registry.redhat.io/ubi9/ubi-minimal:latest
-            env:
-              - name: SLACK_WEBHOOK_URL
-                valueFrom:
-                  secretKeyRef:
-                    name: $(params.secret-name)
-                    key: $(params.key-name)
-            script: |
-              #!/bin/bash
-              set -e
-
-              # Base message
-              MESSAGE="$(params.message)"
-
-              # Add mention for member ID if provided
-              if [ -n "$(params.slack-member-id)" ]; then
-                # Slack user mention format: <@USER_ID>
-                MENTION="<@$(params.slack-member-id)>"
-                MESSAGE="${MENTION} ${MESSAGE}"
-              fi
-
-              # Add mention for group ID if provided
-              if [ -n "$(params.slack-group-id)" ]; then
-                # Slack group mention format: <!subteam^GROUP_ID>
-                GROUP_MENTION="<!subteam^$(params.slack-group-id)>"
-                MESSAGE="${GROUP_MENTION} ${MESSAGE}"
-              fi
-
-              # Escape quotes and newlines for JSON
-              MESSAGE_JSON=$(echo "$MESSAGE" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-
-              # Send to Slack
-              curl -X POST "$SLACK_WEBHOOK_URL" \
-                -H 'Content-Type: application/json' \
-                -d "{\"text\": \"$MESSAGE_JSON\"}"
-
-              echo "Slack notification sent successfully"
+          - name: bundle
+            value: quay.io/konflux-ci/tekton-catalog/task-slack-webhook-notification:0.1@sha256:f81bd9de5ab2984556cbacf7ffcce91f91b03521f8644e54d47c18898c100306
+          - name: name
+            value: slack-webhook-notification
+          - name: kind
+            value: Task
+        resolver: bundles
       when:
         - input: $(tasks.status)
           operator: in
