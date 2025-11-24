@@ -80,7 +80,9 @@ jobs:
         run: |
           filename="${{ matrix.pipeline_file }}"
           filename_no_ext="${filename%.yaml}"
-          echo "filename_label=${filename_no_ext}" >> $GITHUB_OUTPUT
+          # Replace dots with underscores to avoid label parsing issues
+          filename_label="${filename_no_ext//./_}"
+          echo "filename_label=${filename_label}" >> $GITHUB_OUTPUT
 
       - name: Check for existing migration issue
         if: steps.check_migration.outputs.migration_required == 'true'
