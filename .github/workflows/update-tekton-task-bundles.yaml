@@ -173,6 +173,44 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+      - name: Create KubeOpenCode migration task
+        if: steps.check_migration.outputs.migration_required == 'true' && steps.check_existing_issue.outputs.issue_exists == 'false'
+        env:
+          KUBEOPENCODE_CLUSTER_URL: ${{ secrets.KUBEOPENCODE_CLUSTER_URL }}
+          KUBEOPENCODE_TOKEN: ${{ secrets.KUBEOPENCODE_TOKEN }}
+          KUBEOPENCODE_CA: ${{ secrets.KUBEOPENCODE_CA }}
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+          echo "${KUBEOPENCODE_CA}" > /tmp/kubeopencode-ca.crt
+
+          cat <<'EOF' | kubectl \
+            --server="${KUBEOPENCODE_CLUSTER_URL}" \
+            --token="${KUBEOPENCODE_TOKEN}" \
+            --certificate-authority=/tmp/kubeopencode-ca.crt \
+            create -f -
+          apiVersion: kubeopencode.io/v1alpha1
+          kind: Task
+          metadata:
+            generateName: konflux-batch-migration-task-
+            namespace: acm
+          spec:
+            taskTemplateRef:
+              name: konflux-common-pipeline-migration-task-template
+            description: |
+              Process ALL open migration issues in batch mode.
+
+              The agent will:
+              1. List all issues with 'migration' label from stolostron/konflux-build-catalog
+              2. Group changes by pipeline file
+              3. Create a single PR addressing all issues
+              4. Send a summary Slack notification
+          EOF
+
+          rm -f /tmp/kubeopencode-ca.crt
+
       - name: Fail if migration is required
         run: |
           if jq -e 'length > 0' migration_data.json; then
