@@ -420,9 +420,9 @@ spec:
     - name: clamav-scan
       matrix:
         params:
-        - name: image-arch
-          value:
-          - $(params.build-platforms)
+          - name: image-arch
+            value:
+              - $(params.build-platforms)
       params:
         - name: image-digest
           value: $(tasks.build-image-index.results.IMAGE_DIGEST)
