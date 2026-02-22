@@ -4,10 +4,7 @@ metadata:
   name: stolostron-common-stage-build-pipeline
 spec:
   description: |
-    This pipeline is ideal for building multi-arch container images from a Containerfile while maintaining trust after pipeline customization.
-
-    _Uses `buildah` to create a multi-platform container image leveraging [trusted artifacts](https://konflux-ci.dev/architecture/ADR/0036-trusted-artifacts.html). It also optionally creates a source image and runs some build-time tests. This pipeline requires that the [multi platform controller](https://github.com/konflux-ci/multi-platform-controller) is deployed and configured on your Konflux instance. Information is shared between tasks using OCI artifacts instead of PVCs. EC will pass the [`trusted_task.trusted`](https://enterprisecontract.dev/docs/ec-policies/release_policy.html#trusted_task__trusted) policy as long as all data used to build the artifact is generated from trusted tasks.
-    This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-docker-build-multi-platform-oci-ta?tab=tags)_
+    THIS PIPELINE IS STRICTLY FOR TESTING PURPOSES ONLY IN THE KONFLUX-BUILD-CATALOG REPO.
   params:
     - description: Source Repository URL
       name: git-url
@@ -89,10 +86,6 @@ spec:
     - default: "false"
       description: Whether to send slack notification when the pipeline run failed
       name: send-slack-notification
-      type: string
-    - default: "" # Need to change for each release, empty for non-release
-      name: konflux-application-name
-      description: The name of the application in Konflux, this is required when send-slack-notification is true
       type: string
     - default: "slack-acm-notify-secret"
       name: slack-webhook-url-secret-name
@@ -199,7 +192,7 @@ spec:
           - name: url
             value: https://github.com/stolostron/konflux-build-catalog.git
           - name: revision
-            value: 5b59604bda84b13ac9c0dd7858e7316d03d72e20
+            value: $(params.revision)
           - name: pathInRepo
             value: tasks/fetch-product-metadata/fetch-product-metadata.yaml
         resolver: git
@@ -677,7 +670,7 @@ spec:
             :bangbang: PipelineRun name: $(context.pipelineRun.name) id: $(context.pipelineRun.uid) failed:
             - git source: $(params.git-url)/commit/$(params.revision)
             - output image: $(params.output-image)
-            - see details: https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/$(context.pipelineRun.namespace)/applications/$(params.konflux-application-name)/pipelineruns/$(context.pipelineRun.name)
+            - see details: https://konflux-ui.apps.stone-prd-rh01.pg1f.p1.openshiftapps.com/ns/$(context.pipelineRun.namespace)/applications/$(tasks.fetch-product-metadata.results.konflux-application)/pipelineruns/$(context.pipelineRun.name)
         - name: secret-name
           value: $(params.slack-webhook-url-secret-name)
         - name: key-name
